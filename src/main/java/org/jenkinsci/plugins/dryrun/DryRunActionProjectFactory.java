@@ -13,6 +13,7 @@ import java.util.Collection;
  */
 @Extension
 public class DryRunActionProjectFactory extends TransientProjectActionFactory {
+
     @Override
     public Collection<? extends Action> createFor(AbstractProject target) {
         ArrayList<DryRunProjectAction> ta = new ArrayList<DryRunProjectAction>();
