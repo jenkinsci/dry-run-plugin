@@ -22,7 +22,7 @@ public class DryRunUserAction implements Serializable {
     @SuppressWarnings("unused")
     public void doDynamic(String token, StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         //RunListener.all().add(0, runListener);
-        project.scheduleBuild(0, new DryRunCause(), new DryRunActivateListenerAction());
+        project.scheduleBuild(0, new DryRunCause(), new DryRunActivateListenerAction(), new DryRunBuildBadgeAction());
         rsp.forwardToPreviousPage(req);
     }
 }

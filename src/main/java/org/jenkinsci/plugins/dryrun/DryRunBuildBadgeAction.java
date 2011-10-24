@@ -1,14 +1,16 @@
 package org.jenkinsci.plugins.dryrun;
 
-import hudson.model.Action;
+import hudson.model.BuildBadgeAction;
 
 /**
  * @author Gregory Boissinot
  */
-/*
- * Marked action to know if this is a dry-run
- */
-public class DryRunActivateListenerAction implements Action {
+public class DryRunBuildBadgeAction implements BuildBadgeAction {
+
+    public String getDescription() {
+        return "DRY-RUN";
+    }
+
     public String getIconFileName() {
         return null;
     }
