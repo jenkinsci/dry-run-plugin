@@ -65,8 +65,8 @@ public class DryRunListener extends RunListener<Run> {
         populateJobsObjects(build);
         dryRunBuildWrappers(listener);
         dryRunBuilders(build, launcher, listener);
-        dryRunPublishers(listener);
-        listener.getLogger().println("Dry-run end.");
+        dryRunPublishers(build, launcher, listener);
+        listener.getLogger().println("Ending dry-run.");
     }
 
     private void populateJobsObjects(AbstractBuild build) {
@@ -99,8 +99,8 @@ public class DryRunListener extends RunListener<Run> {
         Field buildersField = jobClass.getDeclaredField("builders");
         buildersField.setAccessible(true);
         builders = (DescribableList<Builder, Descriptor<Builder>>) buildersField.get(jobObject);
-        Map<Descriptor<Builder>, Builder> mapBuilders = builders.toMap();
 
+        Map<Descriptor<Builder>, Builder> mapBuilders = builders.toMap();
         for (Map.Entry<Descriptor<Builder>, Builder> entry : mapBuilders.entrySet()) {
             Descriptor<Builder> desc = entry.getKey();
             listener.getLogger().println("Executing Builder [" + desc.getDisplayName() + "]");
@@ -113,13 +113,20 @@ public class DryRunListener extends RunListener<Run> {
         buildersField.set(jobObject, new DryRunEmptyList());
     }
 
-    private void dryRunPublishers(BuildListener listener) throws NoSuchFieldException, IllegalAccessException {
+    private void dryRunPublishers(AbstractBuild build, Launcher launcher, BuildListener listener) throws NoSuchFieldException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         Field publishersField = jobClass.getDeclaredField("publishers");
         publishersField.setAccessible(true);
         publishers = (DescribableList<Publisher, Descriptor<Publisher>>) publishersField.get(jobObject);
+
         Map<Descriptor<Publisher>, Publisher> mapPublishers = publishers.toMap();
-        for (Descriptor<Publisher> desc : mapPublishers.keySet()) {
+        for (Map.Entry<Descriptor<Publisher>, Publisher> entry : mapPublishers.entrySet()) {
+            Descriptor<Publisher> desc = entry.getKey();
             listener.getLogger().println("Executing Publisher [" + desc.getDisplayName() + "]");
+            Publisher publisher = entry.getValue();
+            if (isDryRun(publisher.getClass())) {
+                Method method = publisher.getClass().getMethod("performDryRun", AbstractBuild.class, Launcher.class, BuildListener.class);
+                method.invoke(publisher, build, launcher, listener);
+            }
         }
         publishersField.set(jobObject, new DryRunEmptyList());
     }
