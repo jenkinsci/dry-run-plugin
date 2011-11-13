@@ -1,6 +1,7 @@
 package org.jenkinsci.plugins.dryrun;
 
 import hudson.Extension;
+import hudson.maven.MavenModuleSet;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.TransientProjectActionFactory;
@@ -16,8 +17,11 @@ public class DryRunActionProjectFactory extends TransientProjectActionFactory {
 
     @Override
     public Collection<? extends Action> createFor(AbstractProject target) {
-        ArrayList<DryRunProjectAction> ta = new ArrayList<DryRunProjectAction>();
-        ta.add(new DryRunProjectAction(target));
-        return ta;
+        if (!(target instanceof MavenModuleSet)) {
+            ArrayList<DryRunProjectAction> ta = new ArrayList<DryRunProjectAction>();
+            ta.add(new DryRunProjectAction(target));
+            return ta;
+        }
+        return new ArrayList<Action>();
     }
 }

@@ -3,7 +3,6 @@ package org.jenkinsci.plugins.dryrun;
 import hudson.Extension;
 import hudson.Launcher;
 import hudson.matrix.MatrixProject;
-import hudson.maven.MavenModuleSet;
 import hudson.model.*;
 import hudson.model.listeners.RunListener;
 import hudson.tasks.BuildWrapper;
@@ -34,7 +33,6 @@ public class DryRunListener extends RunListener<Run> {
     @Override
     public Environment setUpEnvironment(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
         if (build.getAction(DryRunActivateListenerAction.class) != null) {
-
             try {
                 dryRun(build, launcher, listener);
             } catch (NoSuchFieldException nse) {
@@ -60,28 +58,35 @@ public class DryRunListener extends RunListener<Run> {
     }
 
 
+    private boolean isFreeStyleProject(Job job) {
+        return job instanceof FreeStyleProject;
+    }
+
+    private boolean isMatrixProject(Job job) {
+        return job instanceof MatrixProject;
+    }
+
+
     private void dryRun(AbstractBuild build, Launcher launcher, BuildListener listener) throws NoSuchFieldException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
         listener.getLogger().println("Starting a dry-run.");
-        populateJobsObjects(build);
+        Job job = build.getParent();
+        populateJobsObjects(job);
         dryRunBuildWrappers(listener);
         dryRunBuilders(build, launcher, listener);
         dryRunPublishers(build, launcher, listener);
         listener.getLogger().println("Ending dry-run.");
     }
 
-    private void populateJobsObjects(AbstractBuild build) {
-        Job job = build.getParent();
-        if (job instanceof MavenModuleSet) {
-            jobClass = MavenModuleSet.class;
-            jobObject = (MavenModuleSet) job;
-        } else if (job instanceof MatrixProject) {
+    private void populateJobsObjects(Job job) {
+        if (isMatrixProject(job)) {
             jobClass = MatrixProject.class;
             jobObject = (MatrixProject) job;
 
-        } else {
+        } else if (isFreeStyleProject(job)) {
             jobClass = Project.class;
             jobObject = (Project) job;
         }
+        assert false;
     }
 
     private void dryRunBuildWrappers(BuildListener listener) throws NoSuchFieldException, IllegalAccessException {
@@ -96,10 +101,13 @@ public class DryRunListener extends RunListener<Run> {
     }
 
     private void dryRunBuilders(AbstractBuild build, Launcher launcher, BuildListener listener) throws NoSuchFieldException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
+        dryRunBuilders2NonMavenProjects(build, launcher, listener);
+    }
+
+    private void dryRunBuilders2NonMavenProjects(AbstractBuild build, Launcher launcher, BuildListener listener) throws NoSuchFieldException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
         Field buildersField = jobClass.getDeclaredField("builders");
         buildersField.setAccessible(true);
         builders = (DescribableList<Builder, Descriptor<Builder>>) buildersField.get(jobObject);
-
         Map<Descriptor<Builder>, Builder> mapBuilders = builders.toMap();
         for (Map.Entry<Descriptor<Builder>, Builder> entry : mapBuilders.entrySet()) {
             Descriptor<Builder> desc = entry.getKey();
@@ -144,23 +152,31 @@ public class DryRunListener extends RunListener<Run> {
     @Override
     public void onCompleted(Run run, TaskListener listener) {
         if (run.getAction(DryRunActivateListenerAction.class) != null) {
+            Job job = run.getParent();
+            assert isMatrixProject(job) || isFreeStyleProject(job);
             Project jenkinsProject = (Project) run.getParent();
             try {
 
                 //Restore buildWrappers
-                Field buildWrappersFiled = Project.class.getDeclaredField("buildWrappers");
-                buildWrappersFiled.setAccessible(true);
-                buildWrappersFiled.set(jenkinsProject, buildWrappers);
+                if (buildWrappers != null) {
+                    Field buildWrappersFiled = Project.class.getDeclaredField("buildWrappers");
+                    buildWrappersFiled.setAccessible(true);
+                    buildWrappersFiled.set(jenkinsProject, buildWrappers);
+                }
 
                 //Restore builders
-                Field buildersFiled = Project.class.getDeclaredField("builders");
-                buildersFiled.setAccessible(true);
-                buildersFiled.set(jenkinsProject, builders);
+                if (builders != null) {
+                    Field buildersFiled = Project.class.getDeclaredField("builders");
+                    buildersFiled.setAccessible(true);
+                    buildersFiled.set(jenkinsProject, builders);
+                }
 
                 //Restore publishers
-                Field publishersFiled = Project.class.getDeclaredField("publishers");
-                publishersFiled.setAccessible(true);
-                publishersFiled.set(jenkinsProject, publishers);
+                if (publishers != null) {
+                    Field publishersFiled = Project.class.getDeclaredField("publishers");
+                    publishersFiled.setAccessible(true);
+                    publishersFiled.set(jenkinsProject, publishers);
+                }
 
             } catch (NoSuchFieldException nse) {
                 listener.getLogger().println("SEVERE ERROR occurs: " + nse.getMessage());
