@@ -2,7 +2,7 @@
 
     <f:optionalBlock name="on"
                      title="${%Configure Dry Run}"
-                     checked="${h.defaultToTrue(instance.on)}"
+                     checked="${instance.on}"
                      help="/plugin/dry-run/help.html">
 
         <f:entry field="enableRunListeners" title="${%Enable for Build Listeners}">
@@ -29,7 +29,13 @@
                     checked="${h.defaultToTrue(instance.enableBuildWrappers)}"/>
         </f:entry>
 
-        <f:entry field="enablePublishers" title="${%Enable for BuildWrappers}">
+        <f:entry field="enableBuilders" title="${%Enable for Builders}">
+            <f:checkbox
+                    name="envInjectInfoJobProperty.enableBuilders"
+                    checked="${h.defaultToTrue(instance.enableBuilders)}"/>
+        </f:entry>
+
+        <f:entry field="enablePublishers" title="${%Enable for Publishers}">
             <f:checkbox
                     name="envInjectInfoJobProperty.enablePublishers"
                     checked="${h.defaultToTrue(instance.enablePublishers)}"/>

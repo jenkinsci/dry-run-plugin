@@ -85,21 +85,28 @@ public class DryRunListener extends RunListener<Run> {
             dryRunPublishers(build, launcher, listener);
         }
 
-        if (dryRunJobProperty.isEnableRunListeners()) {
-            listener.getLogger().println("Dry-run enabled on RunListeners.");
-            dryRunRunListeners(listener);
-        }
-        if (dryRunJobProperty.isEnableSCM()) {
-            listener.getLogger().println("Dry-run enabled on SCMs.");
-            dryRunSCMs(listener);
-        }
-        if (dryRunJobProperty.isEnableBuildWrappers()) {
-            listener.getLogger().println("Dry-run enabled on Build wrappers.");
-            dryRunBuildWrappers(listener);
-        }
-        if (dryRunJobProperty.isEnablePublishers()) {
-            listener.getLogger().println("Dry-run enabled on Publishers.");
-            dryRunPublishers(build, launcher, listener);
+        if (dryRunJobProperty != null && dryRunJobProperty.isOn()) {
+
+            if (dryRunJobProperty.isEnableRunListeners()) {
+                listener.getLogger().println("Dry-run enabled on RunListeners.");
+                dryRunRunListeners(listener);
+            }
+            if (dryRunJobProperty.isEnableSCM()) {
+                listener.getLogger().println("Dry-run enabled on SCMs.");
+                dryRunSCMs(listener);
+            }
+            if (dryRunJobProperty.isEnableBuildWrappers()) {
+                listener.getLogger().println("Dry-run enabled on Build wrappers.");
+                dryRunBuildWrappers(listener);
+            }
+            if (dryRunJobProperty.isEnableBuilders()) {
+                listener.getLogger().println("Dry-run enabled on Builders.");
+                dryRunBuilders(build, launcher, listener);
+            }
+            if (dryRunJobProperty.isEnablePublishers()) {
+                listener.getLogger().println("Dry-run enabled on Publishers.");
+                dryRunPublishers(build, launcher, listener);
+            }
         }
 
         listener.getLogger().println("Ending dry-run.");
@@ -120,6 +127,10 @@ public class DryRunListener extends RunListener<Run> {
 
     private void dryRunRunListeners(BuildListener listener) throws NoSuchFieldException, IllegalAccessException {
         listener.getLogger().println("Dry-run is not available for RunListeners.");
+    }
+
+    private void dryRunTriggers(BuildListener listener) throws NoSuchFieldException, IllegalAccessException {
+        listener.getLogger().println("Dry-run is not available for Triggers.");
     }
 
     private void dryRunSCMs(BuildListener listener) throws NoSuchFieldException, IllegalAccessException {

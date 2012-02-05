@@ -23,6 +23,8 @@ public class DryRunJobProperty extends JobProperty {
 
     private boolean enableBuildWrappers;
 
+    private boolean enableBuilders;
+
     private boolean enablePublishers;
 
     @DataBoundConstructor
@@ -47,6 +49,10 @@ public class DryRunJobProperty extends JobProperty {
 
     public boolean isEnableBuildWrappers() {
         return enableBuildWrappers;
+    }
+
+    public boolean isEnableBuilders() {
+        return enableBuilders;
     }
 
     public boolean isEnablePublishers() {
@@ -75,6 +81,11 @@ public class DryRunJobProperty extends JobProperty {
     @SuppressWarnings("unused")
     public void setEnableBuildWrappers(boolean enableBuildWrappers) {
         this.enableBuildWrappers = enableBuildWrappers;
+    }
+
+    @SuppressWarnings("unused")
+    public void setEnableBuilders(boolean enableBuilders) {
+        this.enableBuilders = enableBuilders;
     }
 
     @SuppressWarnings("unused")
