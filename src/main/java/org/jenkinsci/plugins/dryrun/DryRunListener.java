@@ -34,6 +34,8 @@ public class DryRunListener extends RunListener<Run> {
     public Environment setUpEnvironment(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
         if (build.getAction(DryRunActivateListenerAction.class) != null) {
             try {
+                //Set a build result to SUCCESS, with this following plugins can use previous build result
+                build.setResult(Result.SUCCESS);
 
                 //Get DryRunJobProperty object
                 dryRun(build, launcher, listener);
