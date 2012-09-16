@@ -2,6 +2,8 @@ package org.jenkinsci.plugins.dryrun;
 
 import hudson.model.AbstractProject;
 import hudson.model.Action;
+import hudson.model.Item;
+import org.acegisecurity.AccessDeniedException;
 import org.kohsuke.stapler.StaplerProxy;
 
 /**
@@ -24,7 +26,12 @@ public class DryRunProjectAction implements Action, StaplerProxy {
     }
 
     public String getUrlName() {
-        return "dryRun";
+        try {
+            target.checkPermission(Item.BUILD);
+            return "dryRun";
+        } catch (AccessDeniedException ae) {
+            return null;
+        }
     }
 
     public Object getTarget() {

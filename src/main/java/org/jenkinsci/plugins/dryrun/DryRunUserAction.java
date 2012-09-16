@@ -1,6 +1,7 @@
 package org.jenkinsci.plugins.dryrun;
 
 import hudson.model.AbstractProject;
+import hudson.model.Item;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -21,6 +22,7 @@ public class DryRunUserAction implements Serializable {
 
     @SuppressWarnings("unused")
     public void doDynamic(String token, StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        project.checkPermission(Item.BUILD);
         project.scheduleBuild(0, new DryRunCause(), new DryRunActivateListenerAction(), new DryRunBuildBadgeAction());
         rsp.forwardToPreviousPage(req);
     }
